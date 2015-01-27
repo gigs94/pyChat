@@ -29,7 +29,7 @@ class GetUsers(object):
                                          reply_to = self.callback_queue,
                                          correlation_id = self.corr_id,
                                          ),
-                                   body=str("get_users"))
+                                   body=str("get_users|testing"))
         while self.response is None:
             self.connection.process_data_events()
         return self.response

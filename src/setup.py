@@ -16,7 +16,8 @@ except ImportError:
     has_setuptools = False
 
 
-requirements = ['python-gnupg', 'couchdb', 'rabbitmq']
+
+requirements = ['python-gnupg', 'couchdb', 'Tkinter', 'argparse', 'logging', 'json', 'pika', 'ConfigParser', 'pika' ]
 
 
 # Build setuptools-specific options (if installed).
