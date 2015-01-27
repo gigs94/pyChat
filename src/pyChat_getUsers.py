@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import pika
 import uuid
+import pyChat_log
 
 class GetUsers(object):
     def __init__(self, host):
@@ -23,20 +24,20 @@ class GetUsers(object):
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(exchange='',
-                                   routing_key='getUsers',
+                                   routing_key='server_queue',
                                    properties=pika.BasicProperties(
                                          reply_to = self.callback_queue,
                                          correlation_id = self.corr_id,
                                          ),
-                                   body=str())
+                                   body=str("get_users"))
         while self.response is None:
             self.connection.process_data_events()
-        return int(self.response)
+        return self.response
 
 
 if __name__ == '__main__':
     test = GetUsers('localhost')
 
-    print " [x] Requesting GetUsers() on localhost"
-    response = test.call()
-    print " [.] Got %r" % (response,)
+    pyChat_log.log.debug(" [x] Requesting GetUsers() on localhost")
+    response = test.call("")
+    pyChat_log.log.debug(" [.] Got %s" % (response,))

@@ -85,15 +85,15 @@ def write_config_file():
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='pyChat Client')
-    subparsers = parser.add_subparsers()
+    #parser = argparse.ArgumentParser(description='pyChat Client')
+    #subparsers = parser.add_subparsers()
 
-    debug_parser = subparsers.add_parser('debug', help='debug help')
-    debug_parser.add_argument('directory')
-    debug_parser.set_defaults(func=debug)
+    #debug_parser = subparsers.add_parser('debug', help='debug help')
+    #debug_parser.add_argument('directory')
+    #debug_parser.set_defaults(func=debug)
 
-    args = parser.parse_args()
-    args.func(args)
+    #args = parser.parse_args()
+    #args.func(args)
 
     app = pychat_client(None)
     app.title('pyChat')
