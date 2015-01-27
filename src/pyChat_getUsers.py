@@ -2,6 +2,7 @@
 import pika
 import uuid
 import pyChat_log
+import pyChat_crypto
 
 class GetUsers(object):
     def __init__(self, host):
@@ -29,7 +30,7 @@ class GetUsers(object):
                                          reply_to = self.callback_queue,
                                          correlation_id = self.corr_id,
                                          ),
-                                   body=str("get_users|testing"))
+                                   body=str(n))
         while self.response is None:
             self.connection.process_data_events()
         return self.response
@@ -39,5 +40,7 @@ if __name__ == '__main__':
     test = GetUsers('localhost')
 
     pyChat_log.log.debug(" [x] Requesting GetUsers() on localhost")
-    response = test.call("")
+    response = test.call("get_users|testing")
+    pyChat_log.log.debug(" [.] Got %s" % (response,))
+    response = test.call("server_pubkey")
     pyChat_log.log.debug(" [.] Got %s" % (response,))

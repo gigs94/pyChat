@@ -3,6 +3,7 @@
 
 import pika
 import pyChat_log
+import pyChat_crypto
 
 
 #-------------------------------------------------------------
@@ -94,7 +95,7 @@ def get_server_pubkey(ch, method, props, n):
     '''
     pyChat_log.log.info(" [.] get_server_pubkey requested(%s)" % (n,))
 
-    response = server_pubkey(n)
+    response = pyChat_crypto.getkey(n)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -131,6 +132,7 @@ def server_queue(ch, method, props, body):
 
     else:
         pyChat_log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
+        ch.basic_ack(delivery_tag = method.delivery_tag)
         
     
 
