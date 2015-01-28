@@ -1,8 +1,8 @@
 #!/usr/bin/env python
+
 import pika
 import uuid
-import pyChat_log
-import pyChat_crypto
+
 
 class GetUsers(object):
     def __init__(self, host):
@@ -37,10 +37,12 @@ class GetUsers(object):
 
 
 if __name__ == '__main__':
+    import log
+
     test = GetUsers('localhost')
 
-    pyChat_log.log.debug(" [x] Requesting GetUsers() on localhost")
+    log.log.debug(" [x] Requesting GetUsers() on localhost")
     response = test.call("get_users|testing")
-    pyChat_log.log.debug(" [.] Got %s" % (response,))
+    log.log.debug(" [.] Got %s" % (response,))
     response = test.call("server_pubkey")
-    pyChat_log.log.debug(" [.] Got %s" % (response,))
+    log.log.debug(" [.] Requested server pubkey %s" % (response,))
