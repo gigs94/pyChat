@@ -13,7 +13,9 @@ import argparse
 import logging
 import json
 import os
+import sys
 import pika
+import pyChat
 from ConfigParser import RawConfigParser
 
 #-------------------------------------------------------------------------------

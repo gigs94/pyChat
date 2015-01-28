@@ -2,7 +2,7 @@
 
 '''
 Description:
-        pyChat_server.py is a chat server that manages an instance of the chat service.
+        pyChat.server.py is a chat server that manages an instance of the chat service.
         Each instance of the server runs autonomously, messages delivered to one instance
         of the server will not propogate to another instance.  It is meant to be run in
         small office environments.
@@ -34,13 +34,9 @@ Licence:
         THE SOFTWARE.
 '''
 
-import pyChat_log
-import pyChat_sendUsers
-import pyChat_getUsers
-import pyChat_crypto
-
+import pyChat
 
 if __name__ == "__main__":
     #mykey = genkey()
-    key = pyChat_crypto.getkey("pyChatServer@localhost")
-    pyChat_sendUsers.run_server()
+    key = pyChat.crypto.getkey("pyChatServer@localhost")
+    pyChat.sendUsers.run_server()
