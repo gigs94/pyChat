@@ -2,9 +2,10 @@
 
 import pika
 import uuid
+import crypto
 
 
-class GetUsers(object):
+class pychat_server(object):
     def __init__(self, host):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(
                 host=host))
@@ -16,6 +17,9 @@ class GetUsers(object):
 
         self.channel.basic_consume(self.on_response, no_ack=True,
                                    queue=self.callback_queue)
+ 
+        server_pubkey = self.call("server_pubkey")
+        log.log.debug(" [+] Requested server pubkey (%s)" % (server_pubkey,))
 
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
@@ -39,10 +43,18 @@ class GetUsers(object):
 if __name__ == '__main__':
     import log
 
-    test = GetUsers('localhost')
+    test = pychat_server('localhost')
 
-    log.log.debug(" [x] Requesting GetUsers() on localhost")
-    response = test.call("get_users|testing")
-    log.log.debug(" [.] Got %s" % (response,))
-    response = test.call("server_pubkey")
-    log.log.debug(" [.] Requested server pubkey %s" % (response,))
+    # get pubkey
+    # login to server
+    # get all users
+
+    key = crypto.genkey('tester')
+
+    log.log.debug(" [.] Requesting add_users on localhost")
+    response = test.call("add_user|tester|real tester name|tester@g.com|%s" % key)
+    
+
+    log.log.debug(" [.] Requesting GetUsers() on localhost")
+    response = test.call("get_users")
+    log.log.debug(" [+] Got (%s)" % (response,))

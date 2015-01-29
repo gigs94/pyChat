@@ -2,15 +2,18 @@
 
 
 import pika
-import pyChat
+import log
+import crypto
+import db
 
 
 #-------------------------------------------------------------
-def adduser(user):
+def adduser(info):
     '''
-    adduser takes the username, password, email, realname
+    adds a new user to the system
+    : info : an array of username, realname, email and pubkey 
     '''
-    # TODO implement this method.
+    db.add_user(info[0], info[1], info[2], info[3])
     return "user added successfully"
 
     
@@ -20,7 +23,7 @@ def add_user(ch, method, props, n):
     handle message of type add_user by processing the messgae and returning
     whether the action was successful or not.
     '''
-    pyChat.log.log.info(" [.] add_user requested(%s)" % (n,))
+    log.log.info(" [.] add_user requested(%s)" % (n,))
 
     response = adduser(n)
 
@@ -42,14 +45,13 @@ def getusers(pattern):
     TODO pattern not implemented yet, but it should be a regex to filter users to be returned
     '''
 
-    # TODO implement this method.
-    return "joe bob"
+    return db.get_users()
 
 
 def get_users(ch, method, props, n):
-    pyChat.log.log.info(" [.] get_users requested with filter(%s)" % (n,))
+    log.log.info(" [.] get_users requested with filter(%s)" % (n,))
     response = getusers(n)
-    pyChat.log.log.debug("    [-] response(%s)" % (response,))
+    log.log.debug("    [-] response(%s)" % (response,))
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -57,7 +59,7 @@ def get_users(ch, method, props, n):
                                                      props.correlation_id),
                      body=str(response))
 
-    pyChat.log.log.debug("    [-] response(%s)" % (response,))
+    log.log.debug("    [-] response(%s)" % (response,))
 
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
@@ -92,9 +94,9 @@ def get_server_pubkey(ch, method, props, n):
     '''
     returns the gnupg pubkey for the server
     '''
-    pyChat.log.log.info(" [.] get_server_pubkey requested(%s)" % (n,))
+    log.log.info(" [.] get_server_pubkey requested(%s)" % (n,))
 
-    response = pyChat.crypto.getkey(n)
+    response = crypto.getkey(n)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -112,13 +114,14 @@ def server_queue(ch, method, props, body):
     server_queue(ch, method, props, body) is a callback for when messages are found on the server_queue queue
     '''
     n = body.split('|')
-    pyChat.log.log.info(" [.] server_queue received message (%s)" % (body,))
+    log.log.info(" [.] server_queue received message")
+    log.log.debug(" [-] message body (%s)" % (body,))
 
     if n[0] == 'get_users':
         get_users(ch, method, props, n[1:])
     
     elif n[0] == 'add_user':
-        get_users(ch, method, props, n[1:])
+        add_user(ch, method, props, n[1:])
 
     elif n[0] == 'server_pubkey':
         get_server_pubkey(ch, method, props, n[1:])
@@ -130,7 +133,7 @@ def server_queue(ch, method, props, body):
         logoff(ch, method, props, n[1:])
 
     else:
-        pyChat.log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
+        log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
         ch.basic_ack(delivery_tag = method.delivery_tag)
         
     
@@ -139,17 +142,23 @@ def server_queue(ch, method, props, body):
 #-------------------------------------------------------------
 def run_server():
     '''
-    Starts the queue to listen for server messages, then processes them accordingly.
+    Starts the queue (name=server_queue) to listen for server messages, then processes them accordingly.
     '''
+    db.init_db()
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
 
     channel = connection.channel()
+
     channel.basic_qos(prefetch_count=1)
+
+    # get rid of any old requests
+    channel.queue_delete(queue='server_queue')
     channel.queue_declare(queue='server_queue')
     channel.basic_consume(server_queue, queue='server_queue')
 
-    pyChat.log.log.debug(" [x] Awaiting server_queue requests")
+    log.log.debug(" [x] Awaiting server_queue requests")
 
     channel.start_consuming()
 

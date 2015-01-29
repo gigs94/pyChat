@@ -40,12 +40,12 @@ def getkey(key):
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     ascii_armored_public_keys = gpg.export_keys(key)
-    ascii_armored_private_keys = gpg.export_keys(key, True)
+    #ascii_armored_private_keys = gpg.export_keys(key, True)
 
     log.log.debug(" [-] public keys: %s" % (ascii_armored_public_keys,))
-    log.log.debug(" [-] private keys: %s" % (ascii_armored_private_keys,))
+    #log.log.debug(" [-] private keys: %s" % (ascii_armored_private_keys,))
 
-    return ascii_armored_public_keys, ascii_armored_private_keys
+    return ascii_armored_public_keys#, ascii_armored_private_keys
 
 def encrypt(msg, recipients):
     '''
@@ -97,12 +97,12 @@ def verify(msg):
     return verified
 
 
-def import(keys):
+def import_keys(keys):
     '''
     imports a set of keys.
     '''
     # TODO determine if the keys can be in an array or just blob.
-    log.log.info(" [.] importing keys (%s)" % (keys))
+    log.log.info(" [.] importing keys (%s)" % (keys,))
 
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     import_result = gpg.import_keys(keys)
