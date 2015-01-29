@@ -17,7 +17,7 @@ except ImportError:
 
 
 
-requirements = ['python-gnupg', 'couchdb', 'argparse', 'logging', 'pika', 'ConfigParser', 'pika' ]
+requirements = ['python-gnupg', 'couchdb', 'argparse', 'pika', 'ConfigParser', 'pika', 'wxpython' ]
 
 
 # Build setuptools-specific options (if installed).
