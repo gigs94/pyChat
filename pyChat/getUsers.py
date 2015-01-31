@@ -3,6 +3,8 @@
 import pika
 import uuid
 import crypto
+import log
+import json
 
 
 class pychat_server(object):
@@ -40,6 +42,25 @@ class pychat_server(object):
         return self.response
 
 
+chatserver = pychat_server('localhost')
+
+def getUsers():
+    global chatserver
+    log.log.info(" [.] Requesting GetUsers() on localhost")
+    response = chatserver.call("get_users")
+    log.log.debug(" [.] GetUsers() response (%s)", (response,))
+    return json.loads(response)
+    
+
+def login(user,keyid):
+    global chatserver
+    log.log.info(" [.] Requesting GetUsers() on localhost")
+    suser=crypto.sign(user,keyid)
+    response = chatserver.call("login|{0}".format(suser))
+    log.log.debug(" [.] GetUsers() response (%s)", (response,))
+    return json.loads(response)
+    
+
 if __name__ == '__main__':
     import log
 
@@ -53,7 +74,6 @@ if __name__ == '__main__':
 
     log.log.debug(" [.] Requesting add_users on localhost")
     response = test.call("add_user|tester|real tester name|tester@g.com|%s" % key)
-    
 
     log.log.debug(" [.] Requesting GetUsers() on localhost")
     response = test.call("get_users")

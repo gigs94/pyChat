@@ -5,6 +5,7 @@ import pika
 import log
 import crypto
 import db
+import json
 
 
 #-------------------------------------------------------------
@@ -57,7 +58,7 @@ def get_users(ch, method, props, n):
                      routing_key=props.reply_to,
                      properties=pika.BasicProperties(correlation_id = \
                                                      props.correlation_id),
-                     body=str(response))
+                     body=json.dumps(response))
 
     log.log.debug("    [-] response(%s)" % (response,))
 
@@ -66,12 +67,45 @@ def get_users(ch, method, props, n):
 
 
 #-------------------------------------------------------------
+def log_on_off(ch, method, props, n):
+    '''
+    internal method that does common functionality between logon and logoff
+    it verifies the signature of the username and deletes the queue for that
+    user.
+    : return : channel associated with the username which should have been deleted at the end of this method
+    '''
+    if not crypto.verify(n):
+        log.log.debug("    [-] verification of signature failed for (%s)" % (n,))
+        ch.basic_publish(exchange='',
+                         routing_key=props.reply_to,
+                         properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                         body="FAILED")
+    
+        ch.basic_ack(delivery_tag = method.delivery_tag)
+        return
+        
+    username = crypto.decrypt(n)
+        
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host='localhost'))
+
+    channel = connection.channel()
+
+    channel.basic_qos(prefetch_count=1)
+
+    # get rid of any old requests
+    channel.queue_delete(queue=username)
+
+    return channel
+
+
 def login(ch, method, props, n):
     '''
     validates username/password and creates queue for them to receive messages
     '''
-    # TODO 
-    pass
+    channel = log_on_off(ch, method, props, n)
+    channel.queue_declare(queue=username)
 
 
 
@@ -79,17 +113,11 @@ def logoff(ch, method, props, n):
     '''
     signs off the user and removes the queue
     '''
-    # TODO 
-    pass
+    log_on_off(ch, method, props, n)
 
 
 
 #-------------------------------------------------------------
-def server_pubkey():
-    pass
-
-
-
 def get_server_pubkey(ch, method, props, n):
     '''
     returns the gnupg pubkey for the server
@@ -132,11 +160,15 @@ def server_queue(ch, method, props, body):
     elif n[0] == 'logoff':
         logoff(ch, method, props, n[1:])
 
+    elif n[0] == 'sendmsg':
+        sendmsg(ch, method, props, n[1:])
+
     else:
         log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
         ch.basic_ack(delivery_tag = method.delivery_tag)
         
     
+
 
 
 #-------------------------------------------------------------
