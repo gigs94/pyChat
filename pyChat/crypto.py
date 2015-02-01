@@ -13,12 +13,14 @@ import log
 
 GPGHOME="./.pychat_gpghome"
 
-def reset_gpg(keyname):
+def reset_gpg(username):
     '''
     reset the gpghome directory (aka rm it and start over).  This forces a new key for the local user.
     '''
     os.system('rm -rf %s' % GPGHOME)
-    genkey(keyname)
+    genkey(username)
+
+
 
 def genkey(keyname):
     '''
@@ -31,9 +33,11 @@ def genkey(keyname):
     log.log.debug(" [.] generated key(%s) for %s" % (key,keyname,))
     return key
 
+
+
 def getkey(key):
     '''
-    look for the public (and private) keys for the information provided.  Follows gpg rules so it can be a partial name, email, or key.
+    look for the public keys for the information provided.  Follows gpg rules so it can be a partial name, email, or key.
     Returns lists of all keys that matches criteria.
     '''
     log.log.info(" [.] finding key(%s)" % (key,))
@@ -47,6 +51,8 @@ def getkey(key):
 
     return ascii_armored_public_keys#, ascii_armored_private_keys
 
+
+
 def encrypt(msg, recipients):
     '''
     encrypts msg for recipients
@@ -59,32 +65,36 @@ def encrypt(msg, recipients):
 
     return encrypted
 
+
+
 def decrypt(msg):
     '''
     decrypts msg
-    TODO -- behavior when you don't have the private key for the message to be decrypted.
     '''
     log.log.info(" [.] decrypting message (%s)" % (msg))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
+    # TODO -- behavior when you don't have the private key for the message to be decrypted.
     decrypted = str(gpg.decrypt(str(msg)))
     log.log.info(" [.] decrypted (%s)" % decrypted)
 
     return decrypted
 
 
-def sign(msg):
+
+def sign(msg, keyid=None):
     '''
     sign a message.
     '''
-    # TODO how does it know which private key to sign with??
     log.log.info(" [.] signing message (%s)" % (msg))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
-    signed = gpg.sign(msg)
+    signed = gpg.sign(msg, keyid=keyid)
+    #signed = gpg.sign(msg)
     log.log.info(" [.] signed (%s)" % signed)
 
     return signed
+
 
 
 def verify(msg):
@@ -95,6 +105,7 @@ def verify(msg):
 
     log.log.info(" [.] verified (%s)" % verified)
     return verified
+
 
 
 def import_keys(keys):
@@ -109,33 +120,4 @@ def import_keys(keys):
 
     log.log.info(" [.] imported %d keys" % import_results.count)
     return import_results
-    
-
-if __name__ == "__main__":
-    testkey = "asdf@asdf.asdf"
-    testkey2 = "qwer@qwer.qwer"
-
-    key, pKey = getkey(testkey) 
-    log.log.debug(" [-] getkey returned '%s'" % key)
-    if key == '':
-        key= genkey(testkey)
-
-    key2, pKey2 = getkey(testkey2) 
-    log.log.debug(" [-] getkey returned '%s'" % key2)
-    if key2 == '':
-        key2 = genkey(testkey2)
-
-    testmessage = "this is a test of the encryption message system"
-
-    result = encrypt(testmessage, ['qwer'])
-
-    newtestmessage = decrypt(result)
-
-    if testmessage == newtestmessage:
-        print "Test Successful!"
-    
-
-    testsign = sign(testkey)
-    if verify(str(testsign)):
-        print "verify worked"
     
