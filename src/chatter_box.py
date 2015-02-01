@@ -4,9 +4,10 @@
 import pyChat
 import time
 
+pychat = pyChat.pychat_server('localhost')
 
 def show_users():
-    users = pyChat.getUsers()
+    users = pychat.getUsers()
     pyChat.log.log.debug("users:\n%s" % users)
 
     print "{:^20} | {:^20} | {:^40}".format("Username", "Realname", "Email Address")
@@ -24,14 +25,14 @@ def send_msg():
     except SyntaxError:
         return
 
-    pyChat.sendmsg(who, what)
+    pychat.sendmsg(who, what)
 
 
 def read_msg():
-    pyChat.readMsgs()
+    pychat.readMsgs()
 
 def mlogin():
-    pyChat.login(whoami)
+    pychat.login(whoami)
 
 def main_menu():
     '''

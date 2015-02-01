@@ -8,9 +8,9 @@ import json
 
 
 class pychat_server(object):
-'''
-A singleton class that interfaces with the server.
-'''
+    '''
+    A singleton class that interfaces with the server.
+    '''
     class __OnlyOne:
         def __init__(self, host):
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(
@@ -24,9 +24,9 @@ A singleton class that interfaces with the server.
             self.channel.basic_consume(self.on_response, no_ack=True,
                                        queue=self.callback_queue)
  
-            server_pubkey = self.call("server_pubkey")
+            server_pubkey = self.server_call("server_pubkey")
             log.log.debug(" [+] Requested server pubkey (%s)" % (server_pubkey,))
-                self.val = None
+            self.val = None
 
         def on_response(self, ch, method, props, body):
             if self.corr_id == props.correlation_id:
@@ -71,7 +71,7 @@ A singleton class that interfaces with the server.
 
     def __init__(self, host):
         if not pychat_server.instance:
-            pychat_server.instance = pychat_server.__OnlyOne(arg)
+            pychat_server.instance = pychat_server.__OnlyOne(host)
 
 
     def getUsers(self):
