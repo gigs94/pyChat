@@ -5,6 +5,8 @@ import uuid
 import crypto
 import log
 import json
+from read_messages import ReadMessages
+from collections import deque
 
 
 class pychat_server(object):
@@ -27,6 +29,12 @@ class pychat_server(object):
             server_pubkey = self.server_call("server_pubkey")
             log.log.debug(" [+] Requested server pubkey (%s)" % (server_pubkey,))
             self.val = None
+            self.run_thread = None
+
+            self.queue = deque()
+
+        def stop(self):
+            self.run_thread.stop()
 
         def on_response(self, ch, method, props, body):
             if self.corr_id == props.correlation_id:
@@ -48,6 +56,29 @@ class pychat_server(object):
             while self.response is None:
                 self.connection.process_data_events()
             return self.response
+
+
+        def read_queue(self, username):
+            '''
+            Start a new thread that will get messages for the logged in user
+            '''
+            self.run_thread = ReadMessages('localhost', username, self.queue.append)
+            self.run_thread.start()
+
+        def stop(self):
+            self.run_thread.stop()
+
+
+        def getusers_messages(self):
+            messages = []
+            while (True):
+                if len(self.queue) != 0:
+                   msg = self.queue.popleft()
+                   messages.append(msg)
+                else:
+                   break
+
+            return messages
 
 
         def rabbitmq_publish(self, queue, msg):
@@ -84,38 +115,55 @@ class pychat_server(object):
         return json.loads(response)
     
 
-    def login(self,user,keyid):
+    def login(self,user):
         '''
         logs into the server... required for receiving messages.
         '''
-        log.log.info(" [.] Requesting GetUsers() on localhost")
-        suser=crypto.sign(user,keyid)
+        log.log.info(" [.] Logging in user ({0})".format(user))
+        suser=crypto.sign(user,user)
         response = self.instance.server_call("login|{0}".format(suser))
-        log.log.debug(" [.] GetUsers() response (%s)", (response,))
-        return json.loads(response)
+        log.log.debug(" [.]     response (%s)", (response,))
+        self.instance.read_queue(user)
+        return (response == 'user logged in succesfully')
+
+
+    def logoff(self,user):
+        '''
+        logs off of the server... required for receiving messages.
+        '''
+        log.log.info(" [.] Logging off user ({0})".format(user))
+        suser=crypto.sign(user,user)
+        response = self.instance.server_call("logoff|{0}".format(suser))
+        log.log.debug(" [.]     response (%s)", (response,))
+        return (response == 'user logged off succesfully')
     
 
-    def sendmsg(user, msg):
+    def register(self,user, realname, email, key):
+        '''
+        registers new username with the server.
+        '''
+        log.log.info(" [.] Registering {0}, {1}, {2}, {3}".format(user, realname, email, key))
+        suser=crypto.sign(user,user)
+        sreal=crypto.sign(realname,user)
+        semail=crypto.sign(email,user)
+        response = self.instance.server_call("add_user|{0}|{1}|{2}|{3}".format(suser,sreal,semail,key))
+        log.log.debug(" [.]     response (%s)", (response,))
+        return (response == 'user added successfully') 
+
+
+    def sendmsg(self, user, msg):
         '''
         tries to put the message in the users queue
         '''
         self.instance.rabbitmq_publish(user, msg)
 
 
-if __name__ == '__main__':
-    import log
+    def readmsg(self):
+        '''
+        tries to put the message in the users queue
+        '''
+        return self.instance.getusers_messages()
 
-    test = pychat_server('localhost')
 
-    # get pubkey
-    # login to server
-    # get all users
-
-    key = crypto.genkey('tester')
-
-    log.log.debug(" [.] Requesting add_users on localhost")
-    response = test.server_call("add_user|tester|real tester name|tester@g.com|%s" % key)
-
-    log.log.debug(" [.] Requesting GetUsers() on localhost")
-    response = test.server_call("get_users")
-    log.log.debug(" [+] Got (%s)" % (response,))
+    def stop(self):
+        self.instance.stop()

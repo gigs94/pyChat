@@ -7,14 +7,23 @@ import crypto
 import db
 import json
 
+import time # TODO
+
 
 #-------------------------------------------------------------
-def adduser(info):
+def adduser(user,real,email,key):
     '''
     adds a new user to the system
     : info : an array of username, realname, email and pubkey 
     '''
-    db.add_user(info[0], info[1], info[2], info[3])
+    # TODO -- add capability to "reregister" (lost key file, etc...)
+
+    nkey = crypto.getkey(user)
+    if nkey == '':
+        crypto.import_keys(key)
+    
+    # TODO -- verify user does not already exist and return false if they do
+    db.add_user(user,real,email,key)
     return "user added successfully"
 
     
@@ -26,7 +35,13 @@ def add_user(ch, method, props, n):
     '''
     log.log.info(" [.] add_user requested(%s)" % (n,))
 
-    response = adduser(n)
+    
+    user=crypto.verify(n[0])
+    real=crypto.verify(n[1])
+    email=crypto.verify(n[2])
+    key=n[3]
+
+    response = adduser(user,real,email,key)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -72,7 +87,7 @@ def log_on_off(ch, method, props, n):
     internal method that does common functionality between logon and logoff
     it verifies the signature of the username and deletes the queue for that
     user.
-    : return : channel associated with the username which should have been deleted at the end of this method
+    : return : the username that is being logged on/off
     '''
     if not crypto.verify(n):
         log.log.debug("    [-] verification of signature failed for (%s)" % (n,))
@@ -97,24 +112,42 @@ def log_on_off(ch, method, props, n):
     # get rid of any old requests
     channel.queue_delete(queue=username)
 
-    return channel
+    return username
 
 
 def login(ch, method, props, n):
     '''
     validates username/password and creates queue for them to receive messages
     '''
-    channel = log_on_off(ch, method, props, n)
-    channel.queue_declare(queue=username)
+    username = str(n[0]).rstrip()
+    username = log_on_off(ch, method, props, username)
+    log.log.info(" [.] login (%s)" % (username,))
+    ch.queue_declare(queue=username)
 
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                     props.correlation_id),
+                     body=str('user logged in succesfully'))
+
+    ch.basic_ack(delivery_tag = method.delivery_tag)
 
 
 def logoff(ch, method, props, n):
     '''
     signs off the user and removes the queue
     '''
-    log_on_off(ch, method, props, n)
+    log.log.info(" [.] logoff (%s)" % (n,))
+    username = str(n[0]).rstrip()
+    username = log_on_off(ch, method, props, username)
 
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                     props.correlation_id),
+                     body=str('user {0} logged off succesfully'.format(username)))
+
+    ch.basic_ack(delivery_tag = method.delivery_tag)
 
 
 #-------------------------------------------------------------
@@ -166,6 +199,10 @@ def server_queue(ch, method, props, body):
     else:
         log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
         ch.basic_ack(delivery_tag = method.delivery_tag)
+
+    log.log.info(" [.] server_queue finished processing message")
+
+    
         
     
 

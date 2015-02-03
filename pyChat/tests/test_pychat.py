@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 import unittest
 import os
 import crypto
@@ -6,7 +9,7 @@ import log
 import logging
 
 
-log.log.setLevel(logging.CRITICAL)
+##log.log.setLevel(logging.CRITICAL)
 
 
 class TestCrypto(unittest.TestCase):
@@ -58,9 +61,9 @@ class TestCrypto(unittest.TestCase):
         self.assertTrue(testmessage == newtestmessage)
 
     def test_sign(self):
-        testsign = crypto.sign(self.testkey)
+        testsign = crypto.sign(self.testkey, self.testkey)
         self.assertTrue(testsign != self.testkey)
-        self.assertTrue(crypto.verify(str(testsign)).valid)
+        self.assertTrue(crypto.verify(str(testsign)))
 
 
     def test_import_keys(self):
@@ -68,7 +71,8 @@ class TestCrypto(unittest.TestCase):
         pass
 
     def cleanup(self):
-        os.system('rm -rf %s' % crypto.GPGHOME)
+        #os.system('rm -rf %s' % crypto.GPGHOME)
+        pass
 
 
 if __name__ == '__main__':

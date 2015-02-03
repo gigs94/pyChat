@@ -75,18 +75,18 @@ def decrypt(msg):
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     # TODO -- behavior when you don't have the private key for the message to be decrypted.
-    decrypted = str(gpg.decrypt(str(msg)))
+    decrypted = str(gpg.decrypt(str(msg))).rstrip()
     log.log.info(" [.] decrypted (%s)" % decrypted)
 
     return decrypted
 
 
 
-def sign(msg, keyid=None):
+def sign(msg, keyid):
     '''
     sign a message.
     '''
-    log.log.info(" [.] signing message (%s)" % (msg))
+    log.log.info(" [.] signing message (%s) with key (%s)" % (msg, keyid))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     signed = gpg.sign(msg, keyid=keyid)
@@ -100,17 +100,20 @@ def sign(msg, keyid=None):
 def verify(msg):
     log.log.info(" [.] verifing message (%s)" % (msg))
 
+    if msg == '':
+        return False
+
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     verified = gpg.verify(msg)
 
     log.log.info(" [.] verified (%s)" % verified)
-    return verified
+    return verified.valid
 
 
 
 def import_keys(keys):
     '''
-    imports a set of keys.
+    imports keys into the gnupg keyfile.
     '''
     # TODO determine if the keys can be in an array or just blob.
     log.log.info(" [.] importing keys (%s)" % (keys,))
@@ -118,6 +121,6 @@ def import_keys(keys):
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     import_result = gpg.import_keys(keys)
 
-    log.log.info(" [.] imported %d keys" % import_results.count)
-    return import_results
+    log.log.info(" [.] imported %d keys" % import_result.count)
+    return import_result
     
