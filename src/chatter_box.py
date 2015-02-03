@@ -57,7 +57,8 @@ def stop():
     pychat.stop()
 
 def logoff(user):
-    pychat.logoff(user)
+    if user is not None:
+        pychat.logoff(user)
 
 def main_menu():
     '''

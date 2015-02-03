@@ -3,10 +3,10 @@
 # This code was copied from http://pika.readthedocs.org/en/latest/examples/asynchronous_consumer_example.html
 # but made into a Runnable Thread type
 
-import logging
 import pika
 from threading import Thread
 
+import logging
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)

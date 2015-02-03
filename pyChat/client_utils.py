@@ -66,7 +66,8 @@ class pychat_server(object):
             self.run_thread.start()
 
         def stop(self):
-            self.run_thread.stop()
+            if self.run_thread is not None:
+                self.run_thread.stop()
 
 
         def getusers_messages(self):
@@ -155,6 +156,7 @@ class pychat_server(object):
         '''
         tries to put the message in the users queue
         '''
+        log.log.info(" [.] Publishing message ({0}) to user ({1})".format(msg,user))
         self.instance.rabbitmq_publish(user, msg)
 
 
@@ -162,8 +164,10 @@ class pychat_server(object):
         '''
         tries to put the message in the users queue
         '''
+        log.log.info(" [.] Getting messages")
         return self.instance.getusers_messages()
 
 
     def stop(self):
+        log.log.info(" [.] Stopping the process")
         self.instance.stop()
