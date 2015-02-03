@@ -9,7 +9,7 @@ can decrypt your encrypted messages.
 
 import os
 import gnupg
-import log
+from log import LOGGER
 
 GPGHOME="./.pychat_gpghome"
 
@@ -26,11 +26,11 @@ def genkey(keyname):
     '''
     generate a new gpg key pair for keyname.
     '''
-    log.log.info(" [.] generating key")
+    LOGGER.info(" [.] generating key")
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     input_data = gpg.gen_key_input(name_email=keyname, key_type="RSA", key_length=1024)
     key = gpg.gen_key(input_data)
-    log.log.debug(" [.] generated key(%s) for %s" % (key,keyname,))
+    LOGGER.debug(" [.] generated key(%s) for %s" % (key,keyname,))
     return key
 
 
@@ -40,14 +40,14 @@ def getkey(key):
     look for the public keys for the information provided.  Follows gpg rules so it can be a partial name, email, or key.
     Returns lists of all keys that matches criteria.
     '''
-    log.log.info(" [.] finding key(%s)" % (key,))
+    LOGGER.info(" [.] finding key(%s)" % (key,))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     ascii_armored_public_keys = gpg.export_keys(key)
     #ascii_armored_private_keys = gpg.export_keys(key, True)
 
-    log.log.debug(" [-] public keys: %s" % (ascii_armored_public_keys,))
-    #log.log.debug(" [-] private keys: %s" % (ascii_armored_private_keys,))
+    LOGGER.debug(" [-] public keys: %s" % (ascii_armored_public_keys,))
+    #LOGGER.debug(" [-] private keys: %s" % (ascii_armored_private_keys,))
 
     return ascii_armored_public_keys#, ascii_armored_private_keys
 
@@ -57,11 +57,11 @@ def encrypt(msg, recipients):
     '''
     encrypts msg for recipients
     '''
-    log.log.info(" [.] encrypting message (%s) for recipients (%s)" % (msg,recipients))
+    LOGGER.info(" [.] encrypting message (%s) for recipients (%s)" % (msg,recipients))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     encrypted = gpg.encrypt(msg, recipients)
-    log.log.info(" [.] encrypted (%s)" % encrypted)
+    LOGGER.info(" [.] encrypted (%s)" % encrypted)
 
     return encrypted
 
@@ -71,12 +71,12 @@ def decrypt(msg):
     '''
     decrypts msg
     '''
-    log.log.info(" [.] decrypting message (%s)" % (msg))
+    LOGGER.info(" [.] decrypting message (%s)" % (msg))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     # TODO -- behavior when you don't have the private key for the message to be decrypted.
     decrypted = str(gpg.decrypt(str(msg))).rstrip()
-    log.log.info(" [.] decrypted (%s)" % decrypted)
+    LOGGER.info(" [.] decrypted (%s)" % decrypted)
 
     return decrypted
 
@@ -86,19 +86,19 @@ def sign(msg, keyid):
     '''
     sign a message.
     '''
-    log.log.info(" [.] signing message (%s) with key (%s)" % (msg, keyid))
+    LOGGER.info(" [.] signing message (%s) with key (%s)" % (msg, keyid))
     gpg = gnupg.GPG(gnupghome=GPGHOME)
 
     signed = gpg.sign(msg, keyid=keyid)
     #signed = gpg.sign(msg)
-    log.log.info(" [.] signed (%s)" % signed)
+    LOGGER.info(" [.] signed (%s)" % signed)
 
     return signed
 
 
 
 def verify(msg):
-    log.log.info(" [.] verifing message (%s)" % (msg))
+    LOGGER.info(" [.] verifing message (%s)" % (msg))
 
     if msg == '':
         return False
@@ -106,7 +106,7 @@ def verify(msg):
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     verified = gpg.verify(msg)
 
-    log.log.info(" [.] verified (%s)" % verified)
+    LOGGER.info(" [.] verified (%s)" % verified)
     return verified.valid
 
 
@@ -116,11 +116,11 @@ def import_keys(keys):
     imports keys into the gnupg keyfile.
     '''
     # TODO determine if the keys can be in an array or just blob.
-    log.log.info(" [.] importing keys (%s)" % (keys,))
+    LOGGER.info(" [.] importing keys (%s)" % (keys,))
 
     gpg = gnupg.GPG(gnupghome=GPGHOME)
     import_result = gpg.import_keys(keys)
 
-    log.log.info(" [.] imported %d keys" % import_result.count)
+    LOGGER.info(" [.] imported %d keys" % import_result.count)
     return import_result
     

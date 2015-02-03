@@ -4,13 +4,14 @@
 import argparse
 import pyChat
 import time
+import logging
 
-pychat = pyChat.pychat_server('localhost')
+pychat = None
 whoami = None
 
 def show_users():
     users = pychat.getUsers()
-    pyChat.log.log.debug("users:\n%s" % users)
+    pyChat.LOGGER.debug("users:\n%s" % users)
 
     print "{:^20} | {:^20} | {:^40}".format("Username", "Realname", "Email Address")
     print "{:^20} | {:^20} | {:^40}".format("========", "========", "=============")
@@ -39,7 +40,7 @@ def register():
     key = pyChat.getkey(whoami)
     if key == '':
         key = pyChat.genkey(whoami)
-    pyChat.log.log.debug("registering key {:20s} for username {}".format(key, whoami))
+    pyChat.LOGGER.debug("registering key {:20s} for username {}".format(key, whoami))
     return pychat.register(whoami, real, email, key)
 
 def mlogin():
@@ -48,7 +49,7 @@ def mlogin():
     if key == '':
         print "{} is not a registered user, please register first".format(whoami)
         return
-    pyChat.log.log.debug("key {:20s} for {}".format(key, whoami))
+    pyChat.LOGGER.debug("key {:20s} for {}".format(key, whoami))
     pychat.login(whoami)
     return whoami
 
@@ -59,14 +60,23 @@ def stop():
 def logoff(user):
     if user is not None:
         pychat.logoff(user)
+        global whoami
+        whoami = None
 
 def main_menu():
     '''
     An easy to use menu command line interface front end for pyChat
     '''
+
+    global whoami
+
     print "####################################################"
     print "   C H A T T E R   B O X   -- a pyChat cli client"
     print ""
+    if whoami is not None:
+        print "    logged in as: {0}".format(whoami)
+        print ""
+    
     print " 1. Show Users"
     print " 2. Send Message"
     print " 3. Read Message"
@@ -80,9 +90,8 @@ def main_menu():
     except SyntaxError:
         return
 
-    global whoami
     
-    pyChat.log.log.debug("selection is %s" % selection)
+    pyChat.LOGGER.debug("selection is %s" % selection)
     
     if str(selection) == '1' or str(selection) == 'show':
         show_users()
@@ -109,4 +118,25 @@ def main():
         selection = main_menu()
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d','--debug',
+        help='Print lots of debugging statements',
+        action="store_const",dest="loglevel",const=logging.DEBUG,
+        default=logging.CRITICAL
+    )
+    parser.add_argument('-v','--verbose',
+        help='Be verbose',
+        action="store_const",dest="loglevel",const=logging.INFO
+    )
+    parser.add_argument('-s','--server',
+        help='name or ip of the server to connect to',
+        dest="server",default='localhost'
+    )
+    args = parser.parse_args()    
+    pyChat.LOGGER.setLevel(level=args.loglevel)
+
+    pyChat.conf.HOST = args.server
+    pychat = pyChat.pychat_server(args.server)
+
     main()

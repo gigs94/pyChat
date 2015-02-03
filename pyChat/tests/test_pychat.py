@@ -5,11 +5,8 @@ import unittest
 import os
 import crypto
 
-import log
 import logging
 
-
-##log.log.setLevel(logging.CRITICAL)
 
 
 class TestCrypto(unittest.TestCase):

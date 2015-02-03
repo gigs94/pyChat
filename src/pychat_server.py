@@ -35,8 +35,21 @@ Licence:
 '''
 
 import pyChat
+import logging
+import argparse
 
 if __name__ == "__main__":
-    #mykey = genkey()
-    key = pyChat.crypto.getkey("pyChatServer@localhost")
-    pyChat.sendUsers.run_server()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d','--debug',
+        help='Print lots of debugging statements',
+        action="store_const",dest="loglevel",const=logging.DEBUG,
+        default=logging.CRITICAL
+    )
+    parser.add_argument('-v','--verbose',
+        help='Be verbose',
+        action="store_const",dest="loglevel",const=logging.INFO
+    )
+    args = parser.parse_args()
+    pyChat.LOGGER.setLevel(level=args.loglevel)
+
+    pyChat.run_server()

@@ -7,6 +7,7 @@ import pika
 from threading import Thread
 
 import logging
+
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
@@ -350,7 +351,7 @@ class ReadMessages(Thread):
 __mqueue = None
 
 def callback(ch, method, props, n):
-    log.log.info(" [.] Received message from queue ({0})".format(n))
+    LOGGER.info(" [.] Received message from queue ({0})".format(n))
     __mqueue.add_to_queue(n)
 
     ch.basic_publish(exchange='',
@@ -384,7 +385,7 @@ class read_messages(Thread):
         channel.queue_declare(queue=self.queue_name)
         channel.basic_consume(callback, queue=self.queue_name)
     
-        log.log.debug(" [x] Awaiting {0} requests".format(self.queue_name))
+        LOGGER.debug(" [x] Awaiting {0} requests".format(self.queue_name))
     
         channel.start_consuming()
         

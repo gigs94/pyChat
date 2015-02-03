@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-import log
+from log import LOGGER
 import crypto
 
 

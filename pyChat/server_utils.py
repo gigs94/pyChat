@@ -2,7 +2,8 @@
 
 
 import pika
-import log
+import logging
+from log import LOGGER
 import crypto
 import db
 import json
@@ -33,13 +34,18 @@ def add_user(ch, method, props, n):
     handle message of type add_user by processing the messgae and returning
     whether the action was successful or not.
     '''
-    log.log.info(" [.] add_user requested(%s)" % (n,))
+    LOGGER.info(" [.] add_user requested(%s)" % (n,))
 
     
-    user=crypto.verify(n[0])
-    real=crypto.verify(n[1])
-    email=crypto.verify(n[2])
+    if crypto.verify(n[0]):
+        user=crypto.decrypt(n[0])
+    if crypto.verify(n[1]):
+        real=crypto.decrypt(n[1])
+    if crypto.verify(n[2]):
+        email=crypto.decrypt(n[2])
     key=n[3]
+
+    LOGGER.info(" [.] adding user, realname, email (%s,%s,%s)" % (user,real,email,))
 
     response = adduser(user,real,email,key)
 
@@ -54,9 +60,9 @@ def add_user(ch, method, props, n):
 
 
 #-------------------------------------------------------------
-def getusers(pattern):
+def get_users_from_db(pattern):
     '''
-    getusers(pattern) queries the registered users for a patter or returns all users if ""
+    get_users_from_db(pattern) queries the registered users for a patter or returns all users if ""
 
     TODO pattern not implemented yet, but it should be a regex to filter users to be returned
     '''
@@ -65,9 +71,12 @@ def getusers(pattern):
 
 
 def get_users(ch, method, props, n):
-    log.log.info(" [.] get_users requested with filter(%s)" % (n,))
-    response = getusers(n)
-    log.log.debug("    [-] response(%s)" % (response,))
+    '''
+    return a list of users based on a pattern n
+    '''
+    LOGGER.info(" [.] get_users requested with filter(%s)" % (n,))
+    response = get_users_from_db(n)
+    LOGGER.debug("    [-] response(%s)" % (response,))
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -75,7 +84,7 @@ def get_users(ch, method, props, n):
                                                      props.correlation_id),
                      body=json.dumps(response))
 
-    log.log.debug("    [-] response(%s)" % (response,))
+    LOGGER.debug("    [-] response(%s)" % (response,))
 
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
@@ -90,7 +99,7 @@ def log_on_off(ch, method, props, n):
     : return : the username that is being logged on/off
     '''
     if not crypto.verify(n):
-        log.log.debug("    [-] verification of signature failed for (%s)" % (n,))
+        LOGGER.debug("    [-] verification of signature failed for (%s)" % (n,))
         ch.basic_publish(exchange='',
                          routing_key=props.reply_to,
                          properties=pika.BasicProperties(correlation_id = \
@@ -121,7 +130,7 @@ def login(ch, method, props, n):
     '''
     username = str(n[0]).rstrip()
     username = log_on_off(ch, method, props, username)
-    log.log.info(" [.] login (%s)" % (username,))
+    LOGGER.info(" [.] login (%s)" % (username,))
     ch.queue_declare(queue=username)
 
     ch.basic_publish(exchange='',
@@ -137,7 +146,7 @@ def logoff(ch, method, props, n):
     '''
     signs off the user and removes the queue
     '''
-    log.log.info(" [.] logoff (%s)" % (n,))
+    LOGGER.info(" [.] logoff (%s)" % (n,))
     username = str(n[0]).rstrip()
     username = log_on_off(ch, method, props, username)
 
@@ -155,7 +164,7 @@ def get_server_pubkey(ch, method, props, n):
     '''
     returns the gnupg pubkey for the server
     '''
-    log.log.info(" [.] get_server_pubkey requested(%s)" % (n,))
+    LOGGER.info(" [.] get_server_pubkey requested(%s)" % (n,))
 
     response = crypto.getkey(n)
 
@@ -175,8 +184,8 @@ def server_queue(ch, method, props, body):
     server_queue(ch, method, props, body) is a callback for when messages are found on the server_queue queue
     '''
     n = body.split('|')
-    log.log.info(" [.] server_queue received message")
-    log.log.debug(" [-] message body (%s)" % (body,))
+    LOGGER.info(" [.] server_queue received message")
+    LOGGER.debug(" [-] message body (%s)" % (body,))
 
     if n[0] == 'get_users':
         get_users(ch, method, props, n[1:])
@@ -197,10 +206,10 @@ def server_queue(ch, method, props, body):
         sendmsg(ch, method, props, n[1:])
 
     else:
-        log.log.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
+        LOGGER.critical(" [.] server_queue received INVALID MESSAGE (%s) ignoring" % (body,))
         ch.basic_ack(delivery_tag = method.delivery_tag)
 
-    log.log.info(" [.] server_queue finished processing message")
+    LOGGER.info(" [.] server_queue finished processing message")
 
     
         
@@ -227,7 +236,7 @@ def run_server():
     channel.queue_declare(queue='server_queue')
     channel.basic_consume(server_queue, queue='server_queue')
 
-    log.log.debug(" [x] Awaiting server_queue requests")
+    LOGGER.debug(" [x] Awaiting server_queue requests")
 
     channel.start_consuming()
 
@@ -235,4 +244,5 @@ def run_server():
 
 #-------------------------------------------------------------
 if __name__ == '__main__':
+    LOGGER.setLevel(logging.DEBUG)
     run_server()

@@ -56,5 +56,6 @@ with gnupg encrypted messages.""",
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages = ['pyChat'],
+    scripts = ['src/chatter_box.py','src/pychat_server.py'],
     **setuptools_options
 )
