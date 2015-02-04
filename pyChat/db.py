@@ -58,11 +58,11 @@ def init_db():
 
 def reset_db():
     '''
-    remove the pychat.db and creates a new one(calls create_db)
+    remove the pychat.db and creates a new one(calls init_db)
     '''
     LOGGER.info(" [.] reset_db")
     os.system('rm -rf %s' % conf.PYCHAT_DB)
-    create_db()
+    init_db()
 
     
 def add_user(username, realname, email, pubkey):
