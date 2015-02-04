@@ -56,11 +56,11 @@ Client
 
 The only client at this time (the implementation just has to be able to talk to the server's protocol and to rabbitmq) is chatterbox.py.  Typically,  you would follow these steps to gain access to the system and start chatting:
 
- 1. chatterbox.py
- 2. select 6, register a new account and follow prompts
- 3. select 4, login
- 4. select 1, show users
- 5. select 7, chat with user and follow prompts
+1. chatterbox.py
+2. select 6, register a new account and follow prompts
+3. select 4, login
+4. select 1, show users
+5. select 7, chat with user and follow prompts
 
 When you are not in an active chat, you can send and receive messages in an "email" style fashion with selectors 2 & 3.  
 
@@ -78,8 +78,8 @@ Deployment
 
 pyChat is build with setup.py.   To create an egg file for easy deployment run the following command(s):
 
- 1. sudo python ./setup.py bdist-egg
- 2. sudo python ./setup.py sdist
+1. sudo python ./setup.py bdist-egg
+2. sudo python ./setup.py sdist
 
 The deployable egg files should be in the ./dist directory.   You can also use the plethora of other setuptools functionality for more specialized builds and deployments.
 
@@ -87,12 +87,12 @@ The deployable egg files should be in the ./dist directory.   You can also use t
 
 Known Bugs
 ----------
- 1. There is an error on exit where a NoneType is being called.   Usually happens when nothing has been received.
- 2. If you loose your key for your user, you can't recover it without manually blowing away the user in both the sqlitedb and gnupg repositories
+1. There is an error on exit where a NoneType is being called.   Usually happens when nothing has been received.
+2. If you loose your key for your user, you can't recover it without manually blowing away the user in both the sqlitedb and gnupg repositories
 
 
 Future Development
 ------------------
 
- 1. Design a better GUI interface using wxpython (or equivalent)
- 2. Add more error handling
+1. Design a better GUI interface using wxpython (or equivalent)
+2. Add more error handling
