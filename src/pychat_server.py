@@ -8,7 +8,7 @@ Description:
         small office environments.
 
 Author:
-        Daniel Gregory
+        Daniel Gregory (gigs94@gmail.com)
 
 Licence:
         The MIT License (MIT)

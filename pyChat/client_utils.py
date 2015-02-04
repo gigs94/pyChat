@@ -145,7 +145,10 @@ class pychat_server(object):
         LOGGER.info(" [.] Requesting GetUsers() on localhost")
         response = self.instance.server_call("get_users")
         LOGGER.debug(" [.] GetUsers() response (%s)", (response,))
-        return json.loads(response)
+        jresponse = json.loads(response)
+        for j in jresponse:
+            crypto.import_keys(j[3])
+        return jresponse
     
 
     def login(self,user):

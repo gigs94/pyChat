@@ -18,7 +18,7 @@ def show_users():
 
     print "{:^20} | {:^20} | {:^40}".format("Username", "Realname", "Email Address")
     print "{:^20} | {:^20} | {:^40}".format("========", "========", "=============")
-    for i,user in enumerate(users):
+    for user in users:
         print "{:<20} | {:<20} | {:<40}".format(user[0], user[1], user[2])
 
 def send_msg():
@@ -82,6 +82,7 @@ def interactive():
     continously prints inbound messages and outbound messages to the screen
     for more 'interactive' session
     '''
+    show_users()
     user = raw_input("Who would you like to chat with? ")
     print "type ^C to exit"
     print ""
