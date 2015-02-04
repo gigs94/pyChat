@@ -57,6 +57,8 @@ Client
 
 When you are not in an active chat, you can send and receive messages in an "email" style fashion with selectors 2 & 3.  
 
+NOTE:  The server has to be started first or the client will hang waiting for an ack that will never happen because the server blows the queue away on rabbitmq when it starts so there are no "old" messages.
+
 
 Configuration
 -------------
@@ -68,6 +70,7 @@ There is no needed configuration except for the location of the pychat and rabbi
 Known Bugs
 ----------
  1. There is an error on exit where a NoneType is being called.   Usually happens when nothing has been received.
+ 2. If you loose your key for your user, you can't recover it without manually blowing away the user in both the sqlitedb and gnupg repositories
 
 
 Future Development
