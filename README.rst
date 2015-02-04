@@ -18,17 +18,17 @@ Server
    python ./setup.py install
 
 3. Install docker/boot2docker
-   a.  Install VirtualBox
-   b.  OSX -- install boot2docker http://boot2docker.io/
+ a.  Install VirtualBox
+ b.  OSX -- install boot2docker http://boot2docker.io/
 
    boot2docker_setup.sh
 
-   c.  Linux -- install docker
+ c.  Linux -- install docker
 
    curl -sSL https://get.docker.io/ubuntu/ | sudo sh
    docker run -d -p 5672:5672 -p 15672:15672 dockerfile/rabbitmq
 
-   d.  Windows -- Unsupported at this time
+ d.  Windows -- Unsupported at this time
  
 
 Client
