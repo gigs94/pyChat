@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 '''
 Description:
         pyChat.server.py is a chat server that manages an instance of the chat service.

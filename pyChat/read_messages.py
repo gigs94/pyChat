@@ -1,7 +1,19 @@
 #!/usr/bin/enb python
+'''
+Description:
+       Most of this code was copied from
+       http://pika.readthedocs.org/en/latest/examples/asynchronous_consumer_example.html
+       but made into a Runnable Thread type and has a couple of mods.   But I'm taking
+       no credit here.
 
-# This code was copied from http://pika.readthedocs.org/en/latest/examples/asynchronous_consumer_example.html
-# but made into a Runnable Thread type
+Author:
+        http://pika.readthedocs.org/en/latest/examples/asynchronous_consumer_example.html
+
+Licence:
+        Unknown
+'''
+
+
 
 import pika
 from threading import Thread

@@ -7,3 +7,4 @@
  9.  change the send message so that the user is attached to it.
  10.  be able to get the messages out of the queue for only one person
  11.  add pychat_server.py to dockerfile and run that in a container as well
+ 12.  Ability to change servers in 
