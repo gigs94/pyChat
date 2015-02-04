@@ -4,7 +4,10 @@
 import argparse
 import pyChat
 import time
+msleep = lambda x: time.sleep(x/1000.0)
+
 import logging
+import threading
 
 pychat = None
 whoami = None
@@ -63,6 +66,42 @@ def logoff(user):
         global whoami
         whoami = None
 
+
+def interactive_read(_stop, user):
+    '''
+    Chat with a user
+    '''
+    while(not _stop.isSet()):
+        for body in pychat.readmsg(user):
+            print "{:>60}".format(body)
+        msleep(1)
+        
+
+def interactive():
+    '''
+    continously prints inbound messages and outbound messages to the screen
+    for more 'interactive' session
+    '''
+    user = raw_input("Who would you like to chat with? ")
+    print "type ^C to exit"
+    print ""
+
+    _stop = threading.Event()
+    t = threading.Thread(target=interactive_read, args=(_stop, user, ))
+    t.daemon = True
+    t.start()
+
+    while(True):
+        try:
+            send = raw_input('')
+        except SyntaxError:
+            break
+        except KeyboardInterrupt:
+            break
+        pychat.sendmsg(user, send)
+
+    _stop.set()
+
 def main_menu():
     '''
     An easy to use menu command line interface front end for pyChat
@@ -83,6 +122,7 @@ def main_menu():
     print " 4. Login"
     print " 5. Logoff"
     print " 6. Register new account"
+    print " 7. Chat with user"
     print " 0. Quit"
 
     try:
@@ -105,6 +145,8 @@ def main_menu():
         logoff(whoami)
     elif str(selection) == '6' or str(selection) == 'register':
         register()
+    elif str(selection) == '7' or str(selection) == 'chat':
+        interactive()
     elif str(selection) == '0' or str(selection) == 'quit' or str(selection) == 'q':
         stop()
         quit()

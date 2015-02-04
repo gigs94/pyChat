@@ -19,13 +19,18 @@ def adduser(user,real,email,key):
     '''
     # TODO -- add capability to "reregister" (lost key file, etc...)
 
+    rtn = None
+
     nkey = crypto.getkey(user)
     if nkey == '':
         crypto.import_keys(key)
+        db.add_user(user,real,email,key)
+        rtn = "user added successfully"
+    else:
+        rtn = "user (%s) already exists.  Please select another username".format(user)
+        LOGGER.critical(rtn)
     
-    # TODO -- verify user does not already exist and return false if they do
-    db.add_user(user,real,email,key)
-    return "user added successfully"
+    return rtn
 
     
 

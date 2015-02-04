@@ -1,4 +1,3 @@
- 2.  add configfile stuff to get rid of hardcoded variables (just make them command line args!)
  3.  figure out a way to make it so that we don't block when trying to connect to rabbitmq
  4.  deployment?  is setup.py enough?
  5.  documenation

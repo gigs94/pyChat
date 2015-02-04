@@ -32,6 +32,13 @@ class pychat_server(object):
             self.run_thread = None
 
             self.queue = deque()
+            self.whoami = None
+
+        def get_whoami(self):
+            return self.whoami
+
+        def login(self, user):
+            self.whoami = user
 
         def stop(self):
             self.run_thread.stop()
@@ -70,15 +77,40 @@ class pychat_server(object):
                 self.run_thread.stop()
 
 
+        def decrypt_inbound(self,body):
+            '''
+            takes a user message and tries to decrypt the body of the message
+
+            :rtype: tuple of user, decrypted body, and original body
+            '''
+            user,msg = body.split('|')
+            decrypted = crypto.decrypt(msg)
+            return (user,decrypted,msg)
+
         def getusers_messages(self):
             messages = []
             while (True):
                 if len(self.queue) != 0:
-                   msg = self.queue.popleft()
-                   messages.append(msg)
+                   user,msg,orig = self.decrypt_inbound(self.queue.popleft())
+                   messages.append("{0}|{1}".format(user,msg))
                 else:
                    break
 
+            return messages
+
+
+        def getusers_messages(self, user):
+            messages = []
+            while (True):
+                if len(self.queue) != 0:
+                   ruser,msg,orig = self.decrypt_inbound(self.queue.popleft())
+                   if ruser == user:
+                       messages.append(msg)
+                   else:
+                       # This is a really a hack, but it works :)
+                       self.queue.append("{0}|{1}".format(user,orig))
+                else:
+                   break
             return messages
 
 
@@ -118,14 +150,20 @@ class pychat_server(object):
 
     def login(self,user):
         '''
-        logs into the server... required for receiving messages.
+        logs into the server... required for receiving messages.  And starts the read_queue thread.
         '''
         LOGGER.info(" [.] Logging in user ({0})".format(user))
         suser=crypto.sign(user,user)
         response = self.instance.server_call("login|{0}".format(suser))
         LOGGER.debug(" [.]     response (%s)", (response,))
+
+        # Start up the read_queue to getting messages
         self.instance.read_queue(user)
-        return (response == 'user logged in succesfully')
+        rtn = False
+        if response == 'user logged in succesfully':
+            self.instance.login(user)
+            rtn = True
+        return rtn    
 
 
     def logoff(self,user):
@@ -157,7 +195,9 @@ class pychat_server(object):
         tries to put the message in the users queue
         '''
         LOGGER.info(" [.] Publishing message ({0}) to user ({1})".format(msg,user))
-        self.instance.rabbitmq_publish(user, msg)
+        foo = crypto.encrypt(msg, [user])
+        body = "{0}|{1}".format(self.instance.get_whoami(),foo)
+        self.instance.rabbitmq_publish(user, body)
 
 
     def readmsg(self):
@@ -166,6 +206,14 @@ class pychat_server(object):
         '''
         LOGGER.info(" [.] Getting messages")
         return self.instance.getusers_messages()
+
+
+    def readmsg(self, user):
+        '''
+        gets message in the users queue from a specific user
+        '''
+        LOGGER.info(" [.] Getting messages")
+        return self.instance.getusers_messages(user)
 
 
     def stop(self):
