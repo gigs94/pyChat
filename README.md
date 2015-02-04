@@ -29,7 +29,7 @@ Server
 Client
 ======
 
- 1. Download the pyChat from git hub
+Download the pyChat from git hub
     git clone https://github.com/gigs94/pyChat.git
     cd pyChat
     python ./setup.py install
@@ -66,6 +66,17 @@ Configuration
 There is no needed configuration except for the location of the pychat and rabbitmq server which can be passed via the command line using chatterbox.py.
 
 
+Deployment
+----------
+
+pyChat is build with setup.py.   To create an egg file for easy deployment run the following command(s):
+
+ 1. sudo python ./setup.py bdist-egg
+ 2. sudo python ./setup.py sdist
+
+The deployable egg files should be in the ./dist directory.   You can also use the plethora of other setuptools functionality for more specialized builds and deployments.
+
+
 
 Known Bugs
 ----------
@@ -77,4 +88,4 @@ Future Development
 ------------------
 
  1. Design a better GUI interface using wxpython (or equivalent)
- 2. 
+ 2. Add more error handling

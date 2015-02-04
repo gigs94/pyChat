@@ -1,10 +1,4 @@
  3.  figure out a way to make it so that we don't block when trying to connect to rabbitmq
  4.  deployment?  is setup.py enough?
- 5.  documenation
- 6.  code cleanup
- 7.  unit tests
- 8.  Add header blocks to all code
- 9.  change the send message so that the user is attached to it.
- 10.  be able to get the messages out of the queue for only one person
  11.  add pychat_server.py to dockerfile and run that in a container as well
- 12.  Ability to change servers in 
+ 12.  Ability to change servers and save the server to a conf file for the next run
