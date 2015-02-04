@@ -21,12 +21,12 @@ Server
    a.  Install VirtualBox
    b.  OSX -- install boot2docker http://boot2docker.io/
 
-       boot2docker_setup.sh
+   boot2docker_setup.sh
 
    c.  Linux -- install docker
 
-       curl -sSL https://get.docker.io/ubuntu/ | sudo sh
-       docker run -d -p 5672:5672 -p 15672:15672 dockerfile/rabbitmq
+   curl -sSL https://get.docker.io/ubuntu/ | sudo sh
+   docker run -d -p 5672:5672 -p 15672:15672 dockerfile/rabbitmq
 
    d.  Windows -- Unsupported at this time
  
@@ -34,13 +34,11 @@ Server
 Client
 ======
 
-Download the pyChat from git hub
+Download the pyChat from git hub and install it
 
-..
   git clone https://github.com/gigs94/pyChat.git
   cd pyChat
-  python ./setup.py install
-..
+  sudo python ./setup.py install
 
 
 
@@ -50,13 +48,13 @@ Running
 Server
 ======
 
- The server is installed in /usr/local/bin (typically) and is called pychat_server.py.   The server needs to run on the same machine as the rabbitmq server at this time.  
+The server is installed in /usr/local/bin (typically) and is called pychat_server.py.   The server needs to run on the same machine as the rabbitmq server at this time.  
 
 
 Client
 ======
 
-  The only client at this time (the implementation just has to be able to talk to the server's protocol and to rabbitmq) is chatterbox.py.  Typically,  you would follow these steps to gain access to the system and start chatting:
+The only client at this time (the implementation just has to be able to talk to the server's protocol and to rabbitmq) is chatterbox.py.  Typically,  you would follow these steps to gain access to the system and start chatting:
 
  1. chatterbox.py
  2. select 6, register a new account and follow prompts
